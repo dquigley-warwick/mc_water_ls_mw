@@ -55,8 +55,9 @@ contains
     integer,parameter :: xml = 40 ! Unit number for xmol files
 
     character(1) :: elemid        ! chemical symbol for the current atom
-    character(3) :: lattstr
-
+    character(3) :: lattstr       ! string representing lattice number
+    character(1) :: dumchar       ! dummy character for cell comment line
+  
     integer :: ierr,imol,tmpN,ils
 
     real(kind=dp),dimension(3) :: o_vec
@@ -77,7 +78,17 @@ contains
        if (tmpN/=nwater) stop 'Error wrong number of atoms in input.xmol'
 
        ! read the matrix of cell vectors
-       if (myrank==0) read(xml,*)hmatrix(:,:,ils)
+       if (myrank==0) then
+          read(xml,*,iostat=ierr)dumchar, hmatrix(:,:,ils)
+          if (ierr/=0) then
+             rewind(xml)
+             read(xml,*)
+             read(xml,*,iostat=ierr) hmatrix(:,:,ils)
+             if (ierr/=0) then
+                stop 'Could not extract matrix of cell vectors from line 2 of input'//lattstr//'.xmol'
+             end if             
+          end if          
+       end if
        call comms_bcastreal(hmatrix(1,1,ils),9)
 
        !write(*,'(3F15.6)')hmatrix(:,1,ils)
