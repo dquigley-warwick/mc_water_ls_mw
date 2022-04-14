@@ -1,0 +1,57 @@
+
+
+
+
+&potential
+model_type = "mW"
+/
+
+
+&thermal
+temperature = 200             
+pressure    = 1.0             
+/
+
+
+&MonteCarlo
+mc_ensemble  = 'npt'          
+mc_max_trans = 1.1          
+mc_dv_max    = 0.924           
+mc_target_ratio = 0.5
+wl_factor    = 0.01
+wl_schedule  = 0
+wl_flattol   = 0.05
+wl_useinvt   = .false.
+wl_swetnam   = .false.
+wl_alpha     = 1.0
+wl_minhist   = 20
+nbins        = 121
+mu_max       = +750
+mu_min       = -750
+allow_switch = .false.
+mc_always_switch = .false.
+eta_interp = .true.
+samplerun = .false.
+/
+
+
+&config
+nwater    = 96                
+method    = 'xmol'           
+r_overlap = 0.9                
+ls        = 1
+/
+
+
+&bookkeeping
+list_update_int  = 10          
+traj_output_int  = 100000          
+file_output_int  = 50             
+max_mc_cycles    = 50000000      
+eq_mc_cycles     = 10000        
+eq_adjust_mc     = .true.      
+timer_qtime      = 172800
+timer_closetime  = 1800
+/
+
+
