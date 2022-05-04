@@ -229,8 +229,8 @@ contains
        if ( list_update_int < 1 ) stop 'Error - list_update_int must be > 0 '
        if ( traj_output_int < 1 ) stop 'Error - traj_output_int must be > 0 '
        if ( file_output_int < 1 ) stop 'Error - file_output_int must be > 0 '
-       if ( max_mc_cycles   < 1 ) stop 'Error - max_mc_cycles must be   > 0 '
-       if ( eq_mc_cycles    < 1 ) stop 'Error - eq_mc_cycles must be    > 0'
+       !if ( max_mc_cycles   < 1 ) stop 'Error - max_mc_cycles must be   > 0 '
+       !if ( eq_mc_cycles    < 1 ) stop 'Error - eq_mc_cycles must be    > 0'
 
        !-------------------------!
        ! Parallelisation         !
