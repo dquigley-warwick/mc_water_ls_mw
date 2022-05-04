@@ -1705,7 +1705,7 @@ contains
                            mc_target_ratio,mc_ensemble,nwater,temperature,nbins, &
                            mu_min,mu_max,wl_factor,allow_trans, parallel_strategy, &
                            allow_switch,eq_mc_cycles,monitor_int,num_lattices, &
-                           window_overlap,samplerun
+                           window_overlap,samplerun,allow_vol
     use energy,     only : model_energy,compute_model_energy
     implicit none
 
@@ -1720,15 +1720,15 @@ contains
     character(26) :: ubhstring
 
     ! Compute acceptance ratios for each move type
-    atr = real(mc_accepted_rsteps,kind=dp)/real(mc_attempted_rsteps,kind=dp)
-    avr = real(mc_accepted_vsteps,kind=dp)/real(mc_attempted_vsteps,kind=dp)
-    alr = real(mc_accepted_swtch,kind=dp)/real(mc_attempted_swtch,kind=dp)
+    if (allow_trans)  atr = real(mc_accepted_rsteps,kind=dp)/real(mc_attempted_rsteps,kind=dp)
+    if (allow_vol)    avr = real(mc_accepted_vsteps,kind=dp)/real(mc_attempted_vsteps,kind=dp)
+    if (allow_switch) alr = real(mc_accepted_swtch,kind=dp)/real(mc_attempted_swtch,kind=dp)
 
     ! If adjusting toward a target acceptance ratio then do so.
     ! (Shouldn't be doing this for production runs)
     if (eq_adjust_mc.and.(mc_cycle_num<eq_mc_cycles)) then
-       mc_max_trans = max(mc_max_trans * atr/mc_target_ratio,0.1_dp)
-       mc_dv_max = max(mc_dv_max * avr/mc_target_ratio,0.0001_dp)
+       if (allow_trans) mc_max_trans = max(mc_max_trans * atr/mc_target_ratio,0.1_dp)
+       if (allow_vol)   mc_dv_max = max(mc_dv_max * avr/mc_target_ratio,0.0001_dp)
     end if
 
     write(mylog,'("#                                                              #")')   
