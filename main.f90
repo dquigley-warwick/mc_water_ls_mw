@@ -182,7 +182,7 @@ program mc_water
      !-------------------------------------!
      ! Are we equilibrated?                !
      !-------------------------------------!
-     if (mod(icyc,eq_mc_cycles)==0) equil = .false.
+     if (icyc<=eq_mc_cycles) equil = .false.
 
      !-------------------------------------!
      ! Perform a single MC cycle           !
