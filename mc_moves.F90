@@ -1773,10 +1773,13 @@ contains
 
     write(mylog,'("#                                                              #")')  
 
-    write(mylog,'("# Overlap bins spanned per MC move : min = ",F15.6,"     #")')min_dmu*real(nbins,kind=dp)/(mu_max - mu_min)
-    write(mylog,'("# Overlap bins spanned per MC move : max = ",F15.6,"     #")')max_dmu*real(nbins,kind=dp)/(mu_max - mu_min)
-    write(mylog,'("#                                                              #")')  
+    if (num_lattices==2) then
+    
+       write(mylog,'("# Overlap bins spanned per MC move : min = ",F15.6,"     #")')min_dmu*real(nbins,kind=dp)/(mu_max - mu_min)
+       write(mylog,'("# Overlap bins spanned per MC move : max = ",F15.6,"     #")')max_dmu*real(nbins,kind=dp)/(mu_max - mu_min)
+       write(mylog,'("#                                                              #")')  
 
+    end if
 
     write(mylog,'("# Checking accumulated energies                                #")')
     write(mylog,'("# -----------------------------                                #")')
