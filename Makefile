@@ -24,8 +24,7 @@ OBJECTS   = constants.o timer.o userparams.o util.o random.o \
 # GNU gfortran/OpenMPI 
 F90       = mpif90
 LD        = mpif90
-FFLAGS    = -O3 -mfpmath=sse -msse2 -fallow-argument-mismatch
-#FFLAGS    = -O3 -freciprocal-math -march=native -mrecip=sqrt -mfpmath=sse -msse2 -fallow-argument-mismatch
+FFLAGS    = -O2 -msse2 -freciprocal-math -march=native -mrecip=sqrt -mfpmath=sse -fallow-argument-mismatch
 #FFLAGS    = -O0 -fbacktrace -fbounds-check -fallow-argument-mismatch -g  -ffpe-trap=invalid
 
 # Intel ifort and MKL
