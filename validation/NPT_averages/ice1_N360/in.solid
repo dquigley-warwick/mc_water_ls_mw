@@ -1,0 +1,36 @@
+# LAMMPS input file for mW water model - static energy calculation
+
+# Name of log file
+log mW.log
+
+# Units and atom style
+units real             # Use real units
+atom_style full        # Uncharged point particles
+
+# Read input
+read_data structure.lmp
+
+# Identify atom type 1 with the label mW
+group mW type 1
+
+# Set the mass of the first (and only) atom type.
+mass 1 18.02
+
+# mW atoms interact via Stillinger Weber with mW parameters
+pair_style sw
+pair_coeff * * ../mW.sw mW
+
+# Timestep of 1fs
+timestep 1.0
+
+# Thermostat
+fix 1 all npt temp 220 220 10.0 tri 1.0 1.0 10.0 mtk yes tchain 5 pchain 5
+
+# Things to print during run
+thermo_style custom step pe econserve vol cella cellb cellc cellalpha cellbeta cellgamma 
+thermo 10
+
+# Run for 10000 steps
+run 10000
+
+
