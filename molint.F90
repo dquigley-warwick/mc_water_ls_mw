@@ -62,16 +62,16 @@ module energy
 
   ! Store as parameters for optimisation
   real(kind=dp),parameter :: mw_sigma   = 2.3925_dp*ang_to_bohr     ! In Bohr
-  real(kind=dp),parameter :: mw_epsilon = 6.189_dp/627.509469_dp    ! In Hartree
+  real(kind=dp),parameter :: mw_epsilon = 6.189_dp/627.50950588_dp  ! In Hartree
   real(kind=dp),parameter :: mw_lambda  = 23.15_dp                  ! Dimensionless
 
   ! General Stillinger Weber constants
   real(kind=dp),parameter :: sw_bigA = 7.049556277_dp
-  real(kind=dp),parameter :: sw_B = 0.6022245584_dp
+  real(kind=dp),parameter :: sw_B = 0.602224558_dp
   real(kind=dp),parameter :: sw_gamma = 1.2_dp
   real(kind=dp),parameter :: sw_a = 1.8_dp
   integer,parameter :: sw_p=4,sw_q=0
-  real(kind=dp),parameter :: cos0 = -0.33331324756
+  real(kind=dp),parameter :: cos0 = -0.333333333_dp
 
 
 
