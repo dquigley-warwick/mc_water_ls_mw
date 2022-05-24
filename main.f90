@@ -11,7 +11,7 @@ program mc_water
   use init,        only : read_xmol
   use comms,       only : myrank,size,comms_initialise,comms_allocate,comms_finalise, &
                           comms_bcastlog,comms_allocate
-  use userparams,  only : seedname,max_mc_cycles,eq_mc_cycles,temperature, &
+  use userparams,  only : seedname,max_mc_cycles,temperature, &
                           file_output_int,nwater,leshift,input_ref_enthalpy, &
                            traj_output_int,pressure,mc_ensemble,wl_factor,num_lattices,samplerun
   use mc_moves,    only : mc_cycle,mc_init,mc_deinit,ls_mu,ref_enthalpy,mc_checkpoint_write
@@ -24,7 +24,7 @@ program mc_water
 
   real(kind=dp) :: density
   integer       :: icyc,ierr,ils
-  logical       :: restart,equil,safe,restart1,restart2
+  logical       :: restart,safe,restart1,restart2
   integer       :: start_cycle = 0
   character(3)  :: myrstr
 
@@ -178,11 +178,6 @@ program mc_water
   ! Loop over Monte-Carlo cycles        !
   !-------------------------------------!
   do icyc = start_cycle+1,start_cycle+max_mc_cycles
-
-     !-------------------------------------!
-     ! Are we equilibrated?                !
-     !-------------------------------------!
-     if (icyc<=eq_mc_cycles) equil = .false.
 
      !-------------------------------------!
      ! Perform a single MC cycle           !
