@@ -203,7 +203,7 @@ contains
   end subroutine comms_allreduce_uhist
 
 
-subroutine comms_join_uhist(uhist,length,overlap,joined)
+  subroutine comms_join_uhist(uhist,length,overlap,joined)
     !=========================================================================!
     ! Join unbiased histogram together from multiple overlapping windows.     !
     !-------------------------------------------------------------------------!

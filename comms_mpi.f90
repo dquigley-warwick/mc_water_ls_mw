@@ -296,7 +296,7 @@ contains
 
   end subroutine comms_get_max
 
-subroutine comms_join_uhist(uhist,length,overlap,joined)
+  subroutine comms_join_uhist(uhist,length,overlap,joined)
     !=========================================================================!
     ! Join unbiased histogram together from multiple overlapping windows.     !
     !-------------------------------------------------------------------------!
@@ -316,7 +316,7 @@ subroutine comms_join_uhist(uhist,length,overlap,joined)
     
     integer :: bins_per_window,irank,ierr,k,my_start_bin,my_end_bin
 
-    ! Clunky - replace with something useing MBAR?
+    ! Clunky - replace with something using MBAR?
 
     bins_per_window = length/size 
     
@@ -397,7 +397,7 @@ subroutine comms_join_uhist(uhist,length,overlap,joined)
     
     integer :: bins_per_window,irank,ierr,k,my_start_bin,my_end_bin
 
-    ! Clunky - replace with something useing MBAR?
+    ! Clunky - replace with something using MBAR?
 
     bins_per_window = length/size 
     
