@@ -155,6 +155,86 @@ module util
 
   end subroutine util_images
 
+  function util_scale_to_alt_lattice(vector,current_recip_matrix,alt_hmatrix)
+    !------------------------------------------------------------------------------!
+    ! Takes vector, converts to box-scaled (fractional) coordinates using the      !
+    ! reciprocal lattice vectors contained in current_recip_matrix and then finds  !
+    ! the vector with the same box-scaled coordinates in the cell described by the !
+    ! lattice vectors in alt_hmatrix.                                              !
+    !------------------------------------------------------------------------------!
+    ! D.Quigley June 2022                                                          !
+    !------------------------------------------------------------------------------! 
+    use constants, only : invPi
+    implicit none
+    real(kind=dp),dimension(3),intent(in)   :: vector
+    real(kind=dp),dimension(3,3),intent(in) :: current_recip_matrix,alt_hmatrix
+    real(kind=dp),dimension(3) :: out_vector,util_scale_to_alt_lattice
+
+    real(kind=dp) :: sx,sy,sz
+    integer :: idim
+    
+    sx = current_recip_matrix(1,1)*vector(1) + &
+         current_recip_matrix(2,1)*vector(2) + &
+         current_recip_matrix(3,1)*vector(3)
+    sy = current_recip_matrix(1,2)*vector(1) + &
+         current_recip_matrix(2,2)*vector(2) + &
+         current_recip_matrix(3,2)*vector(3)  
+    sz = current_recip_matrix(1,3)*vector(1) + &
+         current_recip_matrix(2,3)*vector(2) + &
+         current_recip_matrix(3,3)*vector(3) 
+
+    sx = sx*0.5_dp*invPi 
+    sy = sy*0.5_dp*invPi 
+    sz = sz*0.5_dp*invPi 
+
+    do idim=1,3
+       out_vector(idim) = alt_hmatrix(idim,1)*sx + &
+                          alt_hmatrix(idim,2)*sy + &
+                          alt_hmatrix(idim,3)*sz
+    end do
+       
+    util_scale_to_alt_lattice =  out_vector
+    
+  end function util_scale_to_alt_lattice
+
+
+  function util_cart_to_frac(in_vector,current_recip_matrix) 
+    !-------------------------------------------------------------------------!
+    ! Fox the specified box (ibox) convert in_vector in absolute cartesian    !
+    ! coords into internal box-scaled coords.                                 !
+    !                                                                         !
+    ! Requirements : recip_matrix must be valid and current for ibox          !
+    !                use box_update_recip_matrix(ibox) if not.                !
+    !-------------------------------------------------------------------------!
+    ! D.Quigley June 2022                                                          !
+    !-------------------------------------------------------------------------!
+    use constants, only : invPi
+    implicit none
+    real(kind=dp),dimension(3),  intent(in) :: in_vector
+    real(kind=dp),dimension(3,3),intent(in) :: current_recip_matrix
+    real(kind=dp),dimension(3) :: util_cart_to_frac,out_vector
+
+    out_vector(1) = current_recip_matrix(1,1)*in_vector(1) + &
+                    current_recip_matrix(2,1)*in_vector(2) + &
+                    current_recip_matrix(3,1)*in_vector(3)
+    out_vector(2) = current_recip_matrix(1,2)*in_vector(1) + &
+                    current_recip_matrix(2,2)*in_vector(2) + &
+                    current_recip_matrix(3,2)*in_vector(3)
+    out_vector(3) = current_recip_matrix(1,3)*in_vector(1) + &
+                    current_recip_matrix(2,3)*in_vector(2) + &
+                    current_recip_matrix(3,3)*in_vector(3)
+
+    out_vector(1) = out_vector(1)*0.5_dp*invPi
+    out_vector(2) = out_vector(2)*0.5_dp*invPi
+    out_vector(3) = out_vector(3)*0.5_dp*invPi
+
+    util_cart_to_frac = out_vector
+
+    return
+
+  end function util_cart_to_frac
+
+
 end module util
 
 

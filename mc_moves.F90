@@ -259,7 +259,7 @@ contains
 
        ! MPI - synchronise histogram and weights at this interval
        if ( mod(mc_cycle_num,mpi_sync_int)==0 ) then
-          !       write(mylog,'(" DEBUG - syncing weights and histograms at cycle ",I10)')mc_cycle_num
+          ! write(mylog,'(" DEBUG - syncing weights and histograms at cycle ",I10)')mc_cycle_num
 
           if (parallel_strategy=='mw') then
              ! Construct global histogram as sum over individual walker histograms
@@ -810,7 +810,7 @@ contains
           ! Keep only the portion of the weights that relate to my window.
           weight(1:my_start_bin-1) = 0.0_dp
           weight(my_end_bin+1:nbins) = 0.0_dp
-
+          
        end if
        
        if ( wl_factor < orig_wl_factor ) then
@@ -821,6 +821,7 @@ contains
        end if
        
     end if
+       
 
     ! if this is a restart then call mc_checkpoint_load and update 
     ! all properties of the energy module
@@ -976,6 +977,7 @@ contains
          mc_ensemble,pressure,leshift
     use model,      only : ljspm,ljr,ls,volume,hmatrix,recip_matrix
     use energy,     only : compute_local_real_energy,model_energy,compute_model_energy
+    use util,       only : util_scale_to_alt_lattice
     implicit none
 
     ! local variables
@@ -1038,32 +1040,13 @@ contains
     y = y * mc_max_trans*r
     z = z * mc_max_trans*r
 
-    ! Size of move in scaled coordinates
-    sx = recip_matrix(1,1,ls)*x + &
-         recip_matrix(2,1,ls)*y + &
-         recip_matrix(3,1,ls)*z
-    sy = recip_matrix(1,2,ls)*x + &
-         recip_matrix(2,2,ls)*y + &
-         recip_matrix(3,2,ls)*z  
-    sz = recip_matrix(1,3,ls)*x + &
-         recip_matrix(2,3,ls)*y + &
-         recip_matrix(3,3,ls)*z 
-
-    sx = sx*0.5_dp*invPi 
-    sy = sy*0.5_dp*invPi 
-    sz = sz*0.5_dp*invPi 
-
     transvec(1,ls) = x
     transvec(2,ls) = y
     transvec(3,ls) = z
 
-    ! move to make in the non-active lattice
-    if (num_lattices==2) then
-       do idim=1,3
-          transvec(idim,lsn) = hmatrix(idim,1,lsn)*sx + &
-                               hmatrix(idim,2,lsn)*sy + &
-                               hmatrix(idim,3,lsn)*sz
-       end do
+    if (num_lattices == 2) then
+       ! Find equivalent translation in the other lattice
+       transvec(:,lsn) = util_scale_to_alt_lattice(transvec(:,ls),recip_matrix(:,:,ls),hmatrix(:,:,lsn))
     end if
 
     ! debug check for when cell vectors are the same
@@ -1225,7 +1208,7 @@ contains
     use constants,  only : invpi,kb
     use userparams, only : nwater,mc_dv_max,pressure,nwater,num_lattices, &
                            temperature,leshift
-    use util,       only : util_determinant,util_recipmatrix
+    use util,       only : util_determinant,util_recipmatrix,util_scale_to_alt_lattice
     use energy,     only : model_energy,compute_model_energy,compute_ivects
     use model,      only : ljspm,ljr,volume,hmatrix,recip_matrix,ls,ref_ljr
     implicit none
@@ -1289,26 +1272,9 @@ contains
 
           old_pos(:) = ljr(:,1,imol,ils)
 
-          ! compute fractional co-ordinates
-          new_pos(1) = recip_matrix(1,1,ils)*old_pos(1) + &
-                       recip_matrix(2,1,ils)*old_pos(2) + &
-                       recip_matrix(3,1,ils)*old_pos(3)
-          new_pos(2) = recip_matrix(1,2,ils)*old_pos(1) + &
-                       recip_matrix(2,2,ils)*old_pos(2) + &
-                       recip_matrix(3,2,ils)*old_pos(3)  
-          new_pos(3) = recip_matrix(1,3,ils)*old_pos(1) + &
-                       recip_matrix(2,3,ils)*old_pos(2) + &
-                       recip_matrix(3,3,ils)*old_pos(3)        
+          transvec(:) = util_scale_to_alt_lattice(old_pos,recip_matrix(:,:,ils),hmatrix(:,:,ils))
 
-          new_pos = new_pos*0.5_dp*invPi 
-
-          do idim=1,3
-             transvec(idim) = hmatrix(idim,1,ils)*new_pos(1) + &
-                              hmatrix(idim,2,ils)*new_pos(2) + &
-                              hmatrix(idim,3,ils)*new_pos(3)
-          end do
-
-          transvec   = transvec - old_pos
+          transvec(:) = transvec(:) - old_pos(:)
 
           do ilj = 1,ljspm
              ljr(:,ilj,imol,ils) = ljr(:,ilj,imol,ils) + transvec(:)
@@ -1321,33 +1287,15 @@ contains
 
           old_pos(:) = ref_ljr(:,1,imol,ils)
 
-          ! compute fractional co-ordinates
-          new_pos(1) = recip_matrix(1,1,ils)*old_pos(1) + &
-                       recip_matrix(2,1,ils)*old_pos(2) + &
-                       recip_matrix(3,1,ils)*old_pos(3)
-          new_pos(2) = recip_matrix(1,2,ils)*old_pos(1) + &
-                       recip_matrix(2,2,ils)*old_pos(2) + &
-                       recip_matrix(3,2,ils)*old_pos(3)  
-          new_pos(3) = recip_matrix(1,3,ils)*old_pos(1) + &
-                       recip_matrix(2,3,ils)*old_pos(2) + &
-                       recip_matrix(3,3,ils)*old_pos(3)        
+          transvec(:) = util_scale_to_alt_lattice(old_pos,recip_matrix(:,:,ils),hmatrix(:,:,ils))
 
-          new_pos = new_pos*0.5_dp*invPi 
-
-          do idim=1,3
-             transvec(idim) = hmatrix(idim,1,ils)*new_pos(1) + &
-                              hmatrix(idim,2,ils)*new_pos(2) + &
-                              hmatrix(idim,3,ils)*new_pos(3)
-          end do
-
-          transvec   = transvec - old_pos
+          transvec(:) = transvec(:) - old_pos(:)
 
           do ilj = 1,ljspm
              ref_ljr(:,ilj,imol,ils) = ref_ljr(:,ilj,imol,ils) + transvec(:)
           end do
 
        end do
-
 
        ! update volume and anything dependent on
        ! reciprocal lattice.
@@ -1442,26 +1390,9 @@ contains
 
              old_pos(:) = ljr(:,1,imol,ils)
 
-             ! compute fractional co-ordinates
-             new_pos(1) = recip_matrix(1,1,ils)*old_pos(1) + &
-                          recip_matrix(2,1,ils)*old_pos(2) + &
-                          recip_matrix(3,1,ils)*old_pos(3)
-             new_pos(2) = recip_matrix(1,2,ils)*old_pos(1) + &
-                          recip_matrix(2,2,ils)*old_pos(2) + &
-                          recip_matrix(3,2,ils)*old_pos(3)  
-             new_pos(3) = recip_matrix(1,3,ils)*old_pos(1) + &
-                          recip_matrix(2,3,ils)*old_pos(2) + &
-                          recip_matrix(3,3,ils)*old_pos(3)        
+             transvec(:) = util_scale_to_alt_lattice(old_pos,recip_matrix(:,:,ils),hmatrix(:,:,ils))
 
-             new_pos = new_pos*0.5_dp*invPi 
-
-             do idim=1,3
-                transvec(idim) = hmatrix(idim,1,ils)*new_pos(1) + &
-                                 hmatrix(idim,2,ils)*new_pos(2) + &
-                                 hmatrix(idim,3,ils)*new_pos(3)
-             end do
-
-             transvec   = transvec - old_pos
+             transvec(:) = transvec(:) - old_pos(:)
 
              do ilj = 1,ljspm
                 ljr(:,ilj,imol,ils) = ljr(:,ilj,imol,ils) + transvec(:)
@@ -1474,27 +1405,10 @@ contains
 
              old_pos(:) = ref_ljr(:,1,imol,ils)
 
-             ! compute fractional co-ordinates
-             new_pos(1) = recip_matrix(1,1,ils)*old_pos(1) + &
-                          recip_matrix(2,1,ils)*old_pos(2) + &
-                          recip_matrix(3,1,ils)*old_pos(3)
-             new_pos(2) = recip_matrix(1,2,ils)*old_pos(1) + &
-                          recip_matrix(2,2,ils)*old_pos(2) + &
-                          recip_matrix(3,2,ils)*old_pos(3)  
-             new_pos(3) = recip_matrix(1,3,ils)*old_pos(1) + &
-                          recip_matrix(2,3,ils)*old_pos(2) + &
-                          recip_matrix(3,3,ils)*old_pos(3)        
+             transvec(:) = util_scale_to_alt_lattice(old_pos,recip_matrix(:,:,ils),hmatrix(:,:,ils))
 
-             new_pos = new_pos*0.5_dp*invPi 
-
-             do idim=1,3
-                transvec(idim) = hmatrix(idim,1,ils)*new_pos(1) + &
-                                 hmatrix(idim,2,ils)*new_pos(2) + &
-                                 hmatrix(idim,3,ils)*new_pos(3)
-             end do
-
-             transvec   = transvec - old_pos
-
+             transvec(:) = transvec(:) - old_pos(:)
+             
              do ilj = 1,ljspm
                 ref_ljr(:,ilj,imol,ils) = ref_ljr(:,ilj,imol,ils) + transvec(:)
              end do
@@ -1534,6 +1448,8 @@ contains
   end subroutine mc_volume
 
   subroutine mc_lattice_switch()
+
+    ! TODO - write header
 
     use constants, only  : kB
     use model,  only     : ls,volume
@@ -2228,7 +2144,7 @@ contains
     use io,         only : mylog
     use constants,  only : invPi,hart_to_ev,kB
     use userparams, only : nwater,pressure,num_lattices,temperature,leshift
-    use util,       only : util_recipmatrix,util_determinant
+    use util,       only : util_recipmatrix,util_determinant,util_cart_to_frac
     use model,      only : hmatrix,ref_hmatrix,ljr,ref_ljr,recip_matrix,volume
     use energy,     only : model_energy,compute_model_energy,compute_ivects
     implicit none
@@ -2295,34 +2211,10 @@ contains
        do ils = 1,num_lattices
 
           ! Current scaled coordinates
-          svect(1,ils) = recip_matrix(1,1,ils)*ljr(1,1,iwater,ils) + &
-                         recip_matrix(2,1,ils)*ljr(2,1,iwater,ils) + &
-                         recip_matrix(3,1,ils)*ljr(3,1,iwater,ils)
-          svect(2,ils) = recip_matrix(1,2,ils)*ljr(1,1,iwater,ils) + &
-                         recip_matrix(2,2,ils)*ljr(2,1,iwater,ils) + &
-                         recip_matrix(3,2,ils)*ljr(3,1,iwater,ils)  
-          svect(3,ils) = recip_matrix(1,3,ils)*ljr(1,1,iwater,ils) + &
-                         recip_matrix(2,3,ils)*ljr(2,1,iwater,ils) + &
-                         recip_matrix(3,3,ils)*ljr(3,1,iwater,ils) 
-          
-          svect(1,ils) = svect(1,ils)*0.5_dp*invPi 
-          svect(2,ils) = svect(2,ils)*0.5_dp*invPi 
-          svect(3,ils) = svect(3,ils)*0.5_dp*invPi 
+          svect(:,ils) = util_cart_to_frac(ljr(:,1,iwater,ils),recip_matrix(:,:,ils))
 
           ! Current scaled coordinates
-          ref_svect(1,ils) = recip_matrix(1,1,ils)*ref_ljr(1,1,iwater,ils) + &
-                             recip_matrix(2,1,ils)*ref_ljr(2,1,iwater,ils) + &
-                             recip_matrix(3,1,ils)*ref_ljr(3,1,iwater,ils)
-          ref_svect(2,ils) = recip_matrix(1,2,ils)*ref_ljr(1,1,iwater,ils) + &
-                             recip_matrix(2,2,ils)*ref_ljr(2,1,iwater,ils) + &
-                             recip_matrix(3,2,ils)*ref_ljr(3,1,iwater,ils)  
-          ref_svect(3,ils) = recip_matrix(1,3,ils)*ref_ljr(1,1,iwater,ils) + &
-                             recip_matrix(2,3,ils)*ref_ljr(2,1,iwater,ils) + &
-                             recip_matrix(3,3,ils)*ref_ljr(3,1,iwater,ils) 
-          
-          ref_svect(1,ils) = ref_svect(1,ils)*0.5_dp*invPi 
-          ref_svect(2,ils) = ref_svect(2,ils)*0.5_dp*invPi 
-          ref_svect(3,ils) = ref_svect(3,ils)*0.5_dp*invPi 
+          ref_svect(:,ils) = util_cart_to_frac(ref_ljr(:,1,iwater,ils),recip_matrix(:,:,ils))
 
           ! Displacement of scaled coordinates from reference scaled coordinates
           spos_diff(:,iwater,ils) = svect(:,ils) - ref_svect(:,ils)
@@ -2385,18 +2277,13 @@ contains
 !!$    end do
 
     ! Compute reciprocal and real space lattice vectors, charge density
-    ! and cached exponentials.
+    ! and cached exponentials. Update model energy.
     do ils = 1,num_lattices
        volume(ils) = abs(util_determinant(hmatrix(:,:,ils)))
-!       call compute_kvects(ils)
        call compute_ivects(ils)
-!       call compute_rho_k(ils)
-!       call compute_expor(ils)
+       call compute_model_energy(ils)
     end do
     
-    ! Compute new model energy
-    call compute_model_energy(1)
-    call compute_model_energy(2)
 
 
     ! Compute new overlap parameter
