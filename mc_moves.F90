@@ -1913,21 +1913,24 @@ contains
           write(glog,'("# Checking flatness of histogram at cycle ",I10,"           #")')mc_cycle_num
           write(glog,'("# --------------------------------------------------           #")')   
           write(glog,'("#                                                              #")')   
-          write(glog,'("# Most  populated histogram bin = ",F10.4," % of mean         #")')100.0_dp*maxval(histogram,1)/av
-          write(glog,'("# Least populated histogram bin = ",F10.4," % of mean         #")')100.0_dp*minval(histogram,1)/av
+          write(glog,'("# Most  populated histogram bin = ",F10.4," % of mean         #")') &
+               100.0_dp*maxval(histogram(my_start_bin:my_end_bin),1)/av
+          write(glog,'("# Least populated histogram bin = ",F10.4," % of mean         #")') &
+               100.0_dp*minval(histogram(my_start_bin:my_end_bin),1)/av
           write(glog,'("#                                                              #")')   
        end if
 
     elseif (parallel_strategy=='dd') then
 
-          write(mylog,'("# Checking flatness of histogram at cycle ",I10,"           #")')mc_cycle_num
-          write(mylog,'("# --------------------------------------------------           #")')   
-          write(mylog,'("#                                                              #")')   
-          write(mylog,'("# Most  populated histogram bin = ",F10.4," % of mean         #")')100.0_dp*maxval(histogram,1)/av
-          write(mylog,'("# Least populated histogram bin = ",F10.4," % of mean         #")')100.0_dp*minval(histogram,1)/av
-          write(mylog,'("#                                                              #")')   
-
-
+          write(glog,'("# Checking flatness of histogram at cycle ",I10,"           #")')mc_cycle_num
+          write(glog,'("# --------------------------------------------------           #")')   
+          write(glog,'("#                                                              #")')   
+          write(glog,'("# Most  populated histogram bin = ",F10.4," % of mean         #")') &
+               100.0_dp*maxval(histogram(my_start_bin:my_end_bin),1)/av
+          write(glog,'("# Least populated histogram bin = ",F10.4," % of mean         #")') &
+               100.0_dp*minval(histogram(my_start_bin:my_end_bin),1)/av
+          write(glog,'("#                                                              #")')
+          
     end if
 
 
